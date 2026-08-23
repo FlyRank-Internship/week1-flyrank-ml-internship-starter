@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prioritizing Content Refresh Under Capacity Constraints</title>
+  <style>
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-color: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+    }
+    body {
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      line-height: 1.65;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+    .meta {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    .abstract {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 1.05rem;
+      margin: 2rem 0 3rem;
+    }
+    .abstract strong {
+      display: block;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-top: 2.5rem;
+    }
+    p, li {
+      color: var(--text-secondary);
+      font-size: 1.025rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+    th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    footer {
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      padding: 2.5rem 1.5rem;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container" style="padding: 0;">
+      <h1>Prioritizing Content Refresh Under Capacity Constraints</h1>
+      <div class="meta">
+        <strong>Machine Learning Research Track</strong> · Capstone Paper
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 1. Abstract -->
+    <div class="abstract">
+      <strong>Abstract</strong>
+      Editorial and SEO teams manage inventories of tens of thousands of pages but only have the operational capacity to inspect a small fraction for updates each month. We evaluated whether non-leaky performance and freshness signals can accurately prioritize pages in need of review compared to standard heuristic rules. Using a 30,000-page benchmark across 32 pseudonymized client domains, we trained candidate models under an honest client-holdout validation design. A Random Forest model achieved a Precision@50 of 0.740 (identifying 37 declining pages in the top 50 slots) compared to 0.240 for the heuristic baseline (12 positive cases), representing a ~3× concentration in high-priority review slots. This workflow provides auditable decision-support with explicit reason codes and mandatory human-in-the-loop review rather than automated content mutation.
+    </div>
+
+    <!-- 2. Introduction -->
+    <section>
+      <h2>1. Introduction & Problem Statement</h2>
+      <p>
+        Content decay is a persistent operational challenge. Most search teams rely on static heuristic filters—such as flagging pages with high impressions, low click-through rates (CTR), and no updates in 90 days. While intuitive, fixed thresholding fails to capture multi-variable interactions across impressions, rank position, content age, and user engagement. This study asks: Given a strictly limited review capacity (e.g., inspecting 50 pages), can supervised models concentrate declining content more effectively than rule-based scoring?
+      </p>
+    </section>
+
+    <!-- 3. Data -->
+    <section>
+      <h2>2. Data & Public-Safety Scope</h2>
+      <p>
+        This analysis utilizes the <code>content_refresh_anonymized.csv</code> dataset. The slice contains 30,000 rows and 44 features spanning 32 pseudonymized client portfolios. Each row represents one pseudonymized content page aggregated over a trailing 90-day window.
+      </p>
+      <p>
+        <strong>Public-Safety & Privacy Safeguards:</strong> All data is fully pseudonymized. Identifiers are used exclusively for grouping and joins. No client names, domain names, raw URLs, titles, search queries, or internal credentials appear in this research artifact.
+      </p>
+    </section>
+
+    <!-- 4. Methodology -->
+    <section>
+      <h2>3. Methodology & Validation Design</h2>
+      <p>
+        The objective is structured as a ranking and decision-support task. The proxy target is <code>is_declining_label</code> (a decrease in impressions exceeding 20% between comparison periods).
+      </p>
+      <ul>
+        <li><strong>Leakage Safeguards:</strong> Label-derived features (<code>trend_direction</code>, <code>trend_pct</code>) and baseline decision flags are strictly excluded from the feature set.</li>
+        <li><strong>Validation Split:</strong> We employ an 80/20 Client-Holdout Grouped Split to prevent client-specific memorization. Models are trained on 25 clients and evaluated on 7 completely held-out client domains.</li>
+        <li><strong>Imputation:</strong> Missing value imputation (median) and scaling are learned strictly on the training folds.</li>
+      </ul>
+    </section>
+
+    <!-- 5. Results -->
+    <section>
+      <h2>4. Results vs. Baseline</h2>
+      <p>
+        Models were benchmarked against a hand-written heuristic baseline on the identical client-holdout test split. Because real-world review capacity is strictly bounded, Precision@50 is the primary ranking metric.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Model / Strategy</th>
+            <th>Precision@50</th>
+            <th>True Positives (Top 50)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Hand-Rule Baseline</strong></td>
+            <td>0.240</td>
+            <td>12 / 50</td>
+          </tr>
+          <tr>
+            <td><strong>Logistic Regression</strong></td>
+            <td>0.400</td>
+            <td>20 / 50</td>
+          </tr>
+          <tr>
+            <td><strong>Decision Tree (depth=3)</strong></td>
+            <td>0.540</td>
+            <td>27 / 50</td>
+          </tr>
+          <tr>
+            <td><strong>Random Forest (depth=6)</strong></td>
+            <td><strong>0.740</strong></td>
+            <td><strong>37 / 50</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The Random Forest model concentrated 37 declining items in the top-50 review queue compared to 12 items for the baseline rule, representing a ~3× concentration improvement.
+      </p>
+    </section>
+
+    <!-- 6. Limitations -->
+    <section>
+      <h2>5. Limitations & Honest Framing</h2>
+      <ul>
+        <li><strong>Proxy Target, Not Recovery:</strong> The label identifies pages that declined historically; it does not predict whether an edit will cause a traffic recovery.</li>
+        <li><strong>Observational Scope:</strong> Findings are derived from the 30,000-page anonymized slice and do not represent a benchmark of the complete 79-million-row warehouse.</li>
+        <li><strong>Decision Support Only:</strong> This queue is designed exclusively for prioritization and requires human verification prior to executing content changes.</li>
+      </ul>
+    </section>
+
+    <!-- 7. Ranked Recommendations -->
+    <section>
+      <h2>6. Ranked Action Playbook</h2>
+      <p>
+        Model predictions are combined with observable business flags to output a ranked action queue with explicit reason codes. The recommended review order is:
+      </p>
+      <ol>
+        <li><strong>Review and Refresh (High Priority):</strong> Pages exhibiting strong historical visibility paired with severe downward trends and high update age.</li>
+        <li><strong>Investigate Decline:</strong> Pages showing performance drops without obvious freshness decay; inspect for SERP volatility or technical issues.</li>
+        <li><strong>Review Title / Snippet:</strong> Pages with top-page impressions but disproportionately weak CTR.</li>
+        <li><strong>Review Freshness:</strong> Stale pages where age indicates a review is prudent despite stable current traffic.</li>
+        <li><strong>Monitor:</strong> Low-signal or early-stage pages where immediate editorial intervention is not justified.</li>
+      </ol>
+    </section>
+
+    <!-- 8. Reproducibility -->
+    <section>
+      <h2>7. Reproducibility</h2>
+      <p>
+        The complete pipeline—from exploratory data analysis to feature engineering, client-holdout modeling, and action playbook generation—is fully reproducible in Python via the <code>capstone.ipynb</code> notebook.
+      </p>
+      <p>
+        <strong>Repository:</strong> <a href="https://github.com/umerchaudary404/week1-flyrank-ml-internship-starter">umerchaudary404/week1-flyrank-ml-internship-starter</a>
+      </p>
+    </section>
+
+  </main>
+
+  <!-- 9. Acknowledgments -->
+  <footer>
+    <div class="container" style="padding: 0;">
+      <p>
+        <strong>Acknowledgments & Data Credit:</strong> Built on the FlyRank ML Internship dataset hosted by <a href="https://flyrank.ai" target="_blank" rel="noopener noreferrer">FlyRank AI</a>.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
